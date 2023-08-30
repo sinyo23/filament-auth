@@ -22,6 +22,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\ImageColumn;
 
 class PostResource extends Resource
 {
@@ -38,13 +39,13 @@ class PostResource extends Resource
                         TextInput::make('title')
                             ->live()
                             ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state))),
-                        TextInput::make('slug'),
+                        TextInput::make('slug')->required(),
                         Select::make('category_id')
                             ->relationship(name: 'category', titleAttribute: 'name'),
-                            FileUpload::make('thumbnail')
-                            ->multiple()
-                            ->storeFileNamesIn('thumbnail'),
-                        RichEditor::make('content')
+                        FileUpload::make('thumbnail')
+                            ->disk('public')
+                            ->directory('thumbnail'),
+                        RichEditor::make('content')->required()
                     ])
             ]);
     }
@@ -56,6 +57,8 @@ class PostResource extends Resource
                 TextColumn::make('id'),
                 TextColumn::make('title')->sortable()->searchable(),
                 TextColumn::make('slug'),
+                ImageColumn::make('thumbnail')
+                          ->disk('public')
             ])
             ->filters([
                 SelectFilter::make('category')
